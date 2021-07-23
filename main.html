@@ -197,13 +197,7 @@
 	}).extend({
 		index: 'lib/index' //主入口模块
 	}).use('index', function () {
-		var $ = layui.$;
-		// 加载用户基本信息
-		var operation = new Operation("个人.个人账户信息");
-		operation.execute(function (result) {
-			var currentAccount = result.account;
-			$("#current-account").text(currentAccount.user.name);
-		});
+		
 	});
 </script>
 </body>

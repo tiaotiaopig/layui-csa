@@ -46,13 +46,13 @@
             <div class="layui-form-item">
                 <label class="layadmin-user-login-icon layui-icon layui-icon-username"
                        for="LAY-user-login-username"></label>
-                <input type="text" name="username" id="LAY-user-login-username" lay-verify="required" placeholder="用户名"
+                <input type="text" name="username" id="LAY-user-login-username" lay-verify="nickname" placeholder="用户名"
                        class="layui-input">
             </div>
             <div class="layui-form-item">
                 <label class="layadmin-user-login-icon layui-icon layui-icon-password"
                        for="LAY-user-login-password"></label>
-                <input type="password" name="password" id="LAY-user-login-password" lay-verify="required"
+                <input type="password" name="password" id="LAY-user-login-password" lay-verify="pass"
                        placeholder="密码" class="layui-input">
             </div>
             <div class="layui-form-item">
@@ -60,12 +60,13 @@
                     <div class="layui-col-xs7">
                         <label class="layadmin-user-login-icon layui-icon layui-icon-vercode"
                                for="LAY-user-login-vercode"></label>
-                        <input type="text" name="vercode" id="LAY-user-login-vercode"
+                        <input type="text" name="verCode" id="LAY-user-login-vercode" lay-verify="required"
                                placeholder="图形验证码" class="layui-input">
                     </div>
                     <div class="layui-col-xs5">
                         <div style="margin-left: 10px;">
-                            <img src="http://192.168.50.17:7788/auth/captcha" title="点击更换" class="layadmin-user-login-codeimg"
+                            <!-- 在modules/user.js中设置点击更换 -->
+                            <img src="http://localhost:7788/user/captcha" title="点击更换" class="layadmin-user-login-codeimg"
                                  id="LAY-user-get-vercode">
                         </div>
                     </div>
@@ -84,6 +85,8 @@
 </div>
 <!--验证-->
 <script src="./layuiadmin/layui/layui.js"></script>
+<!-- 引入 axios -->
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
 <script>
     layui.config({
@@ -97,70 +100,43 @@
 
         //提交
         form.on('submit(LAY-user-login-submit)', function (obj) {
-            // 修改按钮样式
+            // 修改按钮样式,变成登录中
             var $btn = $(obj.elem);
             $btn.html("<i class=\"layui-icon layui-icon-loading layui-anim layui-anim-rotate layui-anim-loop\"></i>登录中");
-            $("#login").click(function () {
-                $.ajax({
-                    type:"get",
-                    url:"",
-                    data:{"name":$("#LAY-user-login-username").val(),"password":$("#LAY-user-login-password").val()},
-                    dataType:"json",
-                    success:function (data) {
-                        if (data.usermsg==1&&data.pwdmsg==1) {
-                            console.log("成功：",data);
-                            $btn.html("<i class=\"layui-icon layui-icon-face-smile-fine\"></i>登录成功");
-                            //登入成功的提示与跳转
-                            layer.msg('登入成功', {
-                                offset: '15px'
-                                , icon: 1
-                                , time: 500
-                            }, function () {
-                                location.href = './index.html'; //后台主页
-                            });
-                            // $(location).prop("href","index1.html");
-                        } else if(data.usermsg==0&&data.pwdmsg==0){
-                            $("span").text("用户名或密码错误").prop("class","red");
-                        } else if(data.usermsg==0&&data.pwdmsg==1){
-                            $("span").text("该用户不存在").prop("class","red");
-                        } else if(data.usermsg==1&&data.pwdmsg==0){
-                            $("span").text("密码错误").prop("class","red");
-                        }
-                    },
-                    error:function (err) {
-                        console.log("失败",err);
-                    }
-                })
+
+            axios.post('http://localhost:7788/user/doLogin', {
+                params: obj.field,
+                token: ""
             })
-            // var operation = new Operation("公用.登录");
-            // operation.login = obj.field.username;
-            // operation.password = obj.field.password;
-            // operation.captcha = obj.field.vercode;
-            // operation.execute(function (result) {
-            //     if (result.loginStatus == "true") {
-            //         // 修改按钮样式
-            //         $btn.html("<i class=\"layui-icon layui-icon-face-smile-fine\"></i>登录成功");
-            //
-            //         //登入成功的提示与跳转
-            //         layer.msg('登入成功', {
-            //             offset: '15px'
-            //             , icon: 1
-            //             , time: 500
-            //         }, function () {
-            //             location.href = './index.html'; //后台主页
-            //         });
-            //     }
-            //     else {
-            //         // 修改按钮样式
-            //         $btn.html("登 录");
-            //
-            //         //登入成功的提示与跳转
-            //         layer.msg(result.errorInfo, {
-            //             offset: '15px'
-            //             , icon: 5
-            //         });
-            //     }
-            // });
+            .then(function (response) {
+                data = response.data.data;
+                console.log(response);
+                if (data.userMsg == 1 && data.pwdMsg == 1 && data.captchaMsg == 1) {
+                    console.log("成功：",data);
+                    $btn.html("<i class=\"layui-icon layui-icon-face-smile-fine\"></i>登录成功");
+                    //登入成功的提示与跳转
+                    layer.msg('登入成功', {
+                        offset: '15px'
+                        , icon: 1
+                        , time: 500
+                    }, function () {
+                        location.href = './main.html'; //后台主页
+                    });
+                } else {
+                    // 恢复按钮样式
+                    $btn.html("登录");
+                    if(data.captchaMsg == 0) {
+                        layer.msg("验证码错误");
+                    } else if(data.userMsg == 0){
+                        layer.msg("用户名错误");
+                    } else if(data.pwdMsg == 0){
+                        layer.msg("密码错误");
+                    }
+                } 
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
         });
 
         layer.msg("开发阶段验证码随便输入！", {
