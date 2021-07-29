@@ -7,7 +7,7 @@
     <meta name="renderer" content="webkit">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-    <title>网络态势感知系统</title>
+    <title>连接增改删表</title>
     <!-- 引入 layui.css -->
     <link rel="stylesheet" href="//unpkg.com/layui@2.6.8/dist/css/layui.css"/>
 
@@ -15,6 +15,8 @@
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.1.2/dist/echarts.min.js"></script>
     <!-- 引入 axios -->
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <!-- 自定义axios -->
+    <script src="../api/myaxios.js"></script>
     <!-- 引入 layui.js -->
     <script src="//unpkg.com/layui@2.6.8/dist/layui.js"></script>
     <!-- 引入 jquery.js -->
@@ -26,20 +28,19 @@
 
 
 <div class="layui-row  layui-col-space20">
-    <div class="layui-bg-gray" style="padding-left: 20px; padding-right: 20px; ">
-        <fieldset class="layui-elem-field layui-field-title" style="margin-top: 15px;">
-            <legend>Node Table</legend>
+
+
+    <div class="layui-bg-gray" style="padding: 20px; ">
+        <fieldset class="layui-elem-field layui-field-title" style="margin-top: 15px; ">
+            <legend>Link Table</legend>
         </fieldset>
         <div class="layui-row layui-col-space15">
             <div class="layui-col-md12">
-                <div class="layui-panel" >
+                <div class="layui-panel">
                     <div class="layui-btn-group demoTable">
-                        <button class="layui-btn" data-type="addData">添加节点</button>
+                        <button class="layui-btn" data-type="addData">添加边</button>
                     </div>
-
-                    <div >
                     <table class="layui-table" id="tabledata" style="padding: 50px 30px; " lay-filter="demo"></table>
-                    </div>
 
                 </div>
             </div>
@@ -66,14 +67,17 @@
 <script>
     layui.use(['table', 'layer'], function () {
         var table = layui.table;
-         // , layer = layui.layer;
+        // , layer = layui.layer;
         // 表格数据渲染
         table.render({
             elem: '#tabledata'
-             , url: 'http://192.168.50.17:7788/node/list'
+            , url: 'http://localhost:7788/link/page'
+             // 加上satoken,不然请求数据会失败
+             ,headers: {satoken: localStorage.getItem("satoken")}
             ,even: true //开启隔行背景
             ,parseData: function(res){ //res 即为原始返回的数据
-
+                console.log("res")
+                console.log(res.data)
                 return {
                     "code": 0, //解析接口状态
                     "msg": "", //解析提示文本
@@ -81,117 +85,110 @@
                     "data": res.data //解析数据列表
                 };
             }
-
             , limit: 20
-            , title: '数据表'
+            , title: '边数据表'
             , cols: [[
                 {type: 'checkbox', fixed: 'left'}
                 ,
-                {field: 'node.id'
-                    , title: 'ID'
+                {field: 'link.id'
+                    , title: 'id'
                     , templet:function (fileIng){
-                        return fileIng.node.id;
+                        return fileIng.link.id;
                     }
                     ,width: 80, fixed: 'left', unresize: true, sort: true
                 }
-                , {field: 'node.nodeIp'
-                    , title: 'nodeIp'
+                , {field: 'link.sourceNodeId'
+                    , title: 'src_node_id'
                     , templet:function (fileIng){
-                        return fileIng.node.nodeIp;
-                    }
-                    , width: 180, edit: 'text'}
-                , {field: 'node.nodeMac', title: 'nodeMac'
-                    , templet:function (fileIng){
-                        return fileIng.node.nodeMac;
-                    }
-                    , width: 180, edit: 'text'}
-                , {field: 'node.nodeVlan', title: 'nodeVlan'
-                    , templet:function (fileIng){
-                        return fileIng.node.nodeVlan;
+                        return fileIng.link.sourceNodeId;
                     }
                     , width: 120, edit: 'text'}
-                , {field: 'node.nodeName'
-                    , title: 'nodeName'
+                , {field: 'link.targetNodeId', title: 'targetNodeId'
                     , templet:function (fileIng){
-                        return fileIng.node.nodeName;
+                        return fileIng.link.targetNodeId;
+                    }
+                    , width: 120, edit: 'text'}
+                , {field: 'link.linkName', title: 'linkName'
+                    , templet:function (fileIng){
+                        return fileIng.link.linkName;
+                    }
+                    , width: 120, edit: 'text'}
+                , {field: 'link.bandwidth'
+                    , title: 'bandwidth'
+                    , templet:function (fileIng){
+                        return fileIng.link.bandwidth;
                     }
                     , width: 120, sort: true}
-                , {field: 'node.physicalType'
-                    , title: 'physicalType'
+                , {field: 'link.delay'
+                    , title: 'delay'
                     , templet:function (fileIng){
-                        return fileIng.node.physicalType;
+                        return fileIng.link.delay;
                     }
-                    , width: 120}
-                , {field: 'node.logicalType'
-                    , title: 'logicalType'
+                    , width: 100}
+                , {field: 'link.losePackage'
+                    , title: 'losePackage'
                     , templet:function (fileIng){
-                        return fileIng.node.logicalType;
+                        return fileIng.link.losePackage;
                     }
                     , width: 80, sort: true}
-                , {field: 'node.spectrumFloor'
-                    , title: 's_Floor'
+                , {field: 'link.sn'
+                    , title: 'sn'
                     , templet:function (fileIng){
-                        return fileIng.node.spectrumFloor;
+                        return fileIng.link.sn;
+                    }
+                    , width: 100}
+                , {field: 'link.linkType'
+                    , title: 'linkType'
+                    , templet:function (fileIng){
+                        return fileIng.link.linkType;
+                    }
+                    , width: 80}
+                , {field: 'link.spectrumUtilization'
+                    , title: 'spectrumUtilization'
+                    , templet:function (fileIng){
+                        return fileIng.link.spectrumUtilization;
+                    }
+                    , width: 100}
+                , {field: 'link.channelSum'
+                    , title: 'channelSum'
+                    , templet:function (fileIng){
+                        return fileIng.link.channelSum;
+                    }
+                    , width: 60}
+                , {field: 'link.protocolLevel'
+                    , title: 'protocolLevel'
+                    , templet:function (fileIng){
+                        return fileIng.link.protocolLevel;
                     }
                     , width: 50}
-                , {field: 'node.spectrumTop'
-                    , title: 's_Top'
+                , {field: 'link.protocolType'
+                    , title: 'protocolType'
                     , templet:function (fileIng){
-                        return fileIng.node.spectrumTop;
+                        return fileIng.link.protocolType;
                     }
                     , width: 60}
-                , {field: 'node.spectrumAvailability'
-                    , title: 's_Availability'
+                , {field: 'link.initWeight'
+                    , title: 'initWeight'
                     , templet:function (fileIng){
-                        return fileIng.node.spectrumAvailability;
+                        return fileIng.link.initWeight;
                     }
                     , width: 60}
-                , {field: 'node.throughput'
-                    , title: 'throughput'
-                    , templet:function (fileIng){
-                        return fileIng.node.throughput;
-                    }
-                    , width: 60}
-                , {field: 'node.computePerformance'
-                    , title: 'computePerformance'
-                    , templet:function (fileIng){
-                        return fileIng.node.computePerformance;
-                    }
-                    , width: 50}
-                , {field: 'node.hardwareType'
-                    , title: 'hardwareType'
-                    , templet:function (fileIng){
-                        return fileIng.node.hardwareType;
-                    }
-                    , width: 60}
-                , {field: 'node.serviceSum'
-                    , title: 'serviceSum'
-                    , templet:function (fileIng){
-                        return fileIng.node.serviceSum;
-                    }
-                    , width: 60}
-                , {field: 'node.controllableLevel'
-                    , title: 'controllableLevel'
-                    , templet:function (fileIng){
-                        return fileIng.node.controllableLevel;
-                    }
-                    , width: 60}
-                , {field: 'node.gmtCreate'
+                , {field: 'link.gmtCreate'
                     , title: 'gmtCreate'
                     , templet:function (fileIng){
-                        return fileIng.node.gmtCreate;
+                        return fileIng.link.gmtCreate;
                     }
                     , width: 120}
-                , {field: 'node.gmtModified'
+                , {field: 'link.gmtModified'
                     , title: 'gmtModified'
                     , templet:function (fileIng){
-                        return fileIng.node.gmtModified;
+                        return fileIng.link.gmtModified;
                     }
                     , width: 120}
                 , {
-                                field: 'right'
-                                , width: 178, align: 'center', toolbar: '#barDemo',fixed: 'right'
-                            }
+                    field: 'right'
+                    , width: 178, align: 'center', toolbar: '#barDemo',fixed: 'right'
+                }
             ]]
             , page: true
         });
@@ -202,19 +199,19 @@
         //监听工具条
         table.on('tool(demo)', function(obj){
 
-            var data = obj.data.node;
-             console.log("data");
-              console.log(data);
+            var data = obj.data.link;
+            // console.log("data");
+            // console.log(data);
             if(obj.event === 'detail'){
                 layer.msg('ID：'+ data.id + ' 的查看操作');
             } else if(obj.event === 'del'){
                 layer.confirm('真的删除行么', function(index){
-                    var baseUrl = 'http://192.168.50.17:7788/node/deleteNode/'
+                    var baseUrl = '/link/deleteLink/'
                     var num = data.id;
                     console.log("num")
                     console.log(num)
-                     axios({
-                        method: 'post',
+                    axios({
+                        method: 'get',
                         url: baseUrl+num,
                         responseType: 'json',
                         data: {
@@ -228,7 +225,7 @@
                         });
 
                     // obj.del();
-                     layer.close(index);
+                    layer.close(index);
                 });
             } else if(obj.event === 'edit'){
                 //layer.alert('编辑行：<br>'+ JSON.stringify(data))
@@ -237,7 +234,7 @@
                     shade:0.1, //遮罩层透明度
                     area:['850px','500px'], //弹出层宽高
                     title:'修改数据',//弹出层标题
-                    content: 'Demotable.html'//弹出的页面
+                    content: './edit-window/edit-link.html'//弹出的页面
                     ,success: function (layero, index) {
                         var body = layer.getChildFrame('body', index);
 
@@ -248,37 +245,41 @@
                         //var iframeWin = window[layero.find('iframe')[0]['name']]; //得到iframe页的窗口对象，执行iframe页的方法：iframeWin.method();
                         //console.log(body.html()) //得到iframe页的body内容
                         //初始化表单数据的值
-                        //body.find("#id").val(data.id); //要修改的每个td的值存为变量传进去
-                        body.find("#nodeIp").val(data.nodeIp);
-                        body.find("#nodeMac").val(data.nodeMac);
-                        body.find("#nodeVlan").val(data.nodeVlan);
-                        body.find("#nodeName1").val(data.nodeName);
-                        body.find("#physicalType").val(data.physicalType);
-                        body.find("#logicalType").val(data.logicalType);
-                        // console.log(body.find("#nodeIp").val());
-                        //console.log(data.logicalType);
-                        // console.log(layero);
+
+                        //要修改的每个td的值存为变量传进去
+                        // body.find("#id").val(data.id);
+                        body.find("#targetNodeId").val(data.targetNodeId);
+                        body.find("#linkName").val(data.linkName);
+                        body.find("#bandwidth").val(data.bandwidth);
+                        body.find("#delay").val(data.delay);
+                        body.find("#sourceNodeId").val(data.sourceNodeId);
                     }
-                    ,btn: ['确认更新', '按钮二', '按钮三']
+                    ,btn: ['确认更新', '取消']
                     ,yes: function(index, layero){
                         var body = layer.getChildFrame('body', index);
-                    //按钮【按钮一】的回调
-                        data.nodeIp = body.find("#nodeIp").val();
-                        data.nodeMac = body.find("#nodeMac").val();
-                        data.nodeVlan = body.find("#nodeVlan").val();
-                        data.nodeName = body.find("#nodeName1").val();
-                        data.physicalType = body.find("#physicalType").val() ;
-                        data.logicalType = body.find("#logicalType").val();
-                        console.log("data");
-                        console.log(data);
+                        //按钮【按钮一】的回调
+                        // data.id = body.find("#id").val();
+                        data.targetNodeId = body.find("#targetNodeId").val();
+                        data.linkName = body.find("#linkName").val();
+                        data.bandwidth = body.find("#bandwidth").val();
+                        data.delay = body.find("#delay").val() ;
+                        data.sourceNodeId = body.find("#sourceNodeId").val();
 
                         axios({
                             method: 'post',
-                            url: 'http://192.168.50.17:7788/node/updateNode',
+                            url: '/link/update',
                             responseType: 'json',
                             data: {
-                                params: data,
+                                params:{
+                                    link: data,
+                                    source: obj.data.source,
+
+                                    target:obj.data.target
+                                },
+
                                 token: ""
+
+
                             }
                         })
                             .then(function (res) {
@@ -288,22 +289,24 @@
                         layer.close(index); //关闭弹层
                     }
                     ,btn2: function(index, layero){
-                    //按钮【按钮二】的回调
+                        //按钮【按钮二】的回调
 
-                    //return false 开启该代码可禁止点击该按钮关闭
-                }
+                        //return false 开启该代码可禁止点击该按钮关闭
+                    }
 
-            ,cancel: function(){
-                    //右上角关闭回调
+                    ,cancel: function(){
+                        //右上角关闭回调
 
-                    //return false 开启该代码可禁止点击该按钮关闭
-                }
+                        //return false 开启该代码可禁止点击该按钮关闭
+                    }
                     ,shadeClose: true //点击遮罩关闭
 
                 });
 
             }
         });
+
+
 
         var $ = layui.$, active = {
             getCheckData: function(){ //获取选中数据
@@ -326,7 +329,7 @@
                     shade:0.1, //遮罩层透明度
                     area:['850px','500px'], //弹出层宽高
                     title:'添加数据',//弹出层标题
-                    content: 'Demotable.html'//弹出的页面
+                    content: './edit-window/edit-link.html'//弹出的页面
                     ,success: function (layero, index) {
                         var body = layer.getChildFrame('body', index);
                         var iframeWin = window[layero.find('iframe')[0]['name']];
@@ -335,32 +338,32 @@
                     ,btn: ['提交', '取消']
                     ,yes: function(index, layero){
                         var body = layer.getChildFrame('body', index);
-                        //var n_data = new Object();
-
                         //按钮【按钮一】的回调
-                        let nodeIp = body.find("#nodeIp").val();
-                        let nodeMac = body.find("#nodeMac").val();
-                        let nodeVlan = body.find("#nodeVlan").val();
-                        let nodeName = body.find("#nodeName1").val();
-                        let physicalType = body.find("#physicalType").val();
-                        let logicalType = body.find("#logicalType").val();
+                        //let id = body.find("#id").val();
+                        let targetNodeId = body.find("#targetNodeId").val();
+                        let linkName = body.find("#linkName").val();
+                        let bandwidth = body.find("#bandwidth").val();
+                        let delay = body.find("#delay").val() ;
+                        let sourceNodeId = body.find("#sourceNodeId").val();
 
-                        console.log("data");
-                        //console.log(n_data);
+                        console.log(bandwidth);
+                        console.log(targetNodeId);
+                        console.log(sourceNodeId);
+                        console.log(delay);
+                        console.log(linkName);
 
                         axios({
                             method: 'post',
-                            url: 'http://192.168.50.17:7788/node/addNode',
+                            url: '/link/add',
                             responseType: 'json',
                             data: {
                                 params: {
-                                    node: {
-                                        logicalType: logicalType,
-                                        nodeIp: nodeIp,
-                                        nodeMac: nodeMac,
-                                        nodeName: nodeName,
-                                        nodeVlan:nodeVlan,
-                                        physicalType: physicalType
+                                    link: {
+                                        bandwidth: bandwidth,
+                                        delay: delay,
+                                        linkName: linkName,
+                                        sourceNodeId: sourceNodeId,
+                                        targetNodeId: targetNodeId
                                     },
                                     subId: 1
                                 },
@@ -382,13 +385,15 @@
                     }
                     ,shadeClose: true //点击遮罩关闭
                 });
-        }
+            }
 
         };
+
         $('.demoTable .layui-btn').on('click', function(){
             var type = $(this).data('type');
             active[type] ? active[type].call(this) : '';
         });
+
     });
 </script>
 

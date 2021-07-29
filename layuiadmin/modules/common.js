@@ -22,10 +22,18 @@ layui.define(function (exports) {
 	//退出
 	admin.events.logout = function () {
 		//执行退出接口
-		var operation = new Operation("公用.登出");
-		operation.execute(function () {
-			location.href = './index.html';
+		$.ajaxSetup({
+			headers: {
+				"content-type": "application/x-www-form-urlencoded",
+				satoken: localStorage.getItem("satoken")
+			}
 		});
+		$.get("http://localhost:7788/user/doLogout");
+		location.href = './login.html';
+		// var operation = new Operation("公用.登出");
+		// operation.execute(function () {
+		// 	location.href = './index.html';
+		// });
 	};
 
 	//对外暴露的接口

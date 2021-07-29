@@ -7,7 +7,7 @@
     <meta name="renderer" content="webkit">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-    <title>图例</title>
+    <title>态势要素展示</title>
     <!-- 引入 layui.css -->
     <link rel="stylesheet" href="//unpkg.com/layui@2.6.8/dist/css/layui.css"/>
 
@@ -15,6 +15,8 @@
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.1.2/dist/echarts.min.js"></script>
     <!-- 引入 axios -->
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <!-- 自定义axios -->
+    <script src="../api/myaxios.js"></script>
     <!-- 引入 layui.js -->
     <script src="//unpkg.com/layui@2.6.8/dist/layui.js"></script>
     <!-- 引入 jquery.js -->
@@ -273,7 +275,7 @@
     };
     option && myChart.setOption(option);
 
-    axios.get('http://192.168.50.17:7788/node/list?page=1&limit=8')
+    axios.get('/node/list?page=1&limit=8')
         .then(function (response) {
             myChart.hideLoading();
 
@@ -583,7 +585,7 @@
     };
 
     option1 && myChart1.setOption(option1);
-    axios.get('http://192.168.50.17:7788/node/vulNum')
+    axios.get('/node/vulNum')
         .then(function (response) {
             console.log("response");
             console.log(response);
@@ -677,7 +679,7 @@
 
     option2 && myChart2.setOption(option2);
 
-    axios.get('http://192.168.50.17:7788/service/safetyCount')
+    axios.get('/service/safetyCount')
         .then(function (response) {
             // myChart.hideLoading();
             //console.log(response);
@@ -750,7 +752,7 @@
         ]
     };
     option3 && myChart3.setOption(option3);
-    axios.get('http://192.168.50.17:7788/node/logicalCount')
+    axios.get('/node/logicalCount')
         .then(function (response) {
             myChart.hideLoading();
 
@@ -835,7 +837,7 @@
         ]
     };
 
-    axios.get('http://192.168.50.17:7788/node/physicalCount')
+    axios.get('/node/physicalCount')
         .then(function (response) {
             let physicalCount = response.data.data;
             let Arr = [];

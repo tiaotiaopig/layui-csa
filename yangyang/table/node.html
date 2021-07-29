@@ -26,13 +26,12 @@
 <div class="layui-row  layui-col-space20" >
 
     <div class="layui-bg-gray" style="padding-left: 30px; padding-right: 30px;">
-
         <div class="layui-row layui-col-space15">
             <div  class="layui-col-md12">
                 <fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
-                    <legend>节点可控制级别:可利用</legend>
+                    <legend></legend>
                 </fieldset>
-                <div id= "hhh" class="layui-panel" style="height: 200px" >
+                <div id= "hhh" class="layui-panel" style="height: 675px" >
                     <table class="layui-hide" id="test"  lay-filter="test"></table>
                 </div>
             </div>
@@ -48,7 +47,6 @@
 
 <!-- Node表 -->
 <script>
-    var countdata;
     layui.use(['table', 'layer'], function () {
         var table = layui.table
             , layer = layui.layer;
@@ -57,36 +55,24 @@
         table.render({
             elem: '#test'
             ,even: true //开启隔行背景
-            , url: 'http://192.168.50.17:7788/node/list'
+            , url: 'http://localhost:7788/node/list'
             ,parseData: function(res){ //res 即为原始返回的数据
-                console.log("res")
                 console.log(res)
-                countdata = res.count;
-                let o_node = res.data;
-                console.log(o_node)
-                // console.log(o_node[0].node)
-                let c_node_1 = [];
-                let arr = [];
-
-                for(var i=0;i<o_node.length;i++){
-                    if(o_node[i].node.controllableLevel ==2){
-                        arr.push(o_node[i].node.id);
-                        c_node_1.push(o_node[i])
-                    }
-                }
-                console.log("arr")
-                console.log(arr)
-                console.log("c_node_1")
-                console.log(c_node_1)
-
                 return {
                     "code": 0, //解析接口状态
                     "msg": "", //解析提示文本
-                    "count": arr.length, //解析数据长度
-                    "data": c_node_1 //解析数据列表
+                    "count": res.count, //解析数据长度
+                    "data": res.data //解析数据列表
                 };
             }
-             , limit: 20
+            , limit: 15
+            ,limits:[15,30,45]
+            //, toolbar: '#toolbarDemo' //开启头部工具栏，并为其绑定左侧模板
+            // , defaultToolbar: ['filter', 'exports', 'print', { //自定义头部工具栏右侧图标。如无需自定义，去除该参数即可
+            //     title: '提示'
+            //     , layEvent: 'LAYTABLE_TIPS'
+            //     , icon: 'layui-icon-tips'
+            // }]
 
             , title: '用户数据表'
             , cols: [[

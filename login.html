@@ -87,7 +87,8 @@
 <script src="./layuiadmin/layui/layui.js"></script>
 <!-- 引入 axios -->
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-
+<!-- 引入封装好的myaxios -->
+<script src="./api/myaxios.js"></script>
 <script>
     layui.config({
         base: './layuiadmin/' //静态资源所在路径
@@ -104,13 +105,13 @@
             var $btn = $(obj.elem);
             $btn.html("<i class=\"layui-icon layui-icon-loading layui-anim layui-anim-rotate layui-anim-loop\"></i>登录中");
 
-            axios.post('http://localhost:7788/user/doLogin', {
+            axios.post('http://127.0.0.1:7788/user/doLogin', {
                 params: obj.field,
                 token: ""
             })
             .then(function (response) {
-                data = response.data.data;
-                console.log(response);
+                let data = response.data.data;
+                localStorage.setItem("satoken", data.saToken);
                 if (data.userMsg == 1 && data.pwdMsg == 1 && data.captchaMsg == 1) {
                     console.log("成功：",data);
                     $btn.html("<i class=\"layui-icon layui-icon-face-smile-fine\"></i>登录成功");
@@ -120,7 +121,7 @@
                         , icon: 1
                         , time: 500
                     }, function () {
-                        location.href = './main.html'; //后台主页
+                        location.href = './index.html'; //后台主页
                     });
                 } else {
                     // 恢复按钮样式
@@ -139,7 +140,7 @@
             });
         });
 
-        layer.msg("开发阶段验证码随便输入！", {
+        layer.msg("验证码不分大小写！", {
             offset: '15px'
             , icon: 6
         });

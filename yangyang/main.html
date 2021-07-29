@@ -3,11 +3,10 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-
     <meta name="renderer" content="webkit">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-    <title>网络态势感知系统</title>
+    <title>网络态势感知系统主页</title>
     <!-- 引入 layui.css -->
     <link rel="stylesheet" href="//unpkg.com/layui@2.6.8/dist/css/layui.css"/>
 
@@ -110,7 +109,7 @@
 <!-- 引入 axios -->
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
-
+<script src="../api/myaxios.js"></script>
 <script>
     // 基于准备好的dom，初始化echarts实例
     var myChart = echarts.init(document.getElementById('pie-left'));
@@ -153,7 +152,7 @@
 
     };
 
-    axios.get('http://192.168.50.17:7788/service/serviceCount')
+    axios.get('/service/serviceCount')
         .then(function (response) {
             // myChart.hideLoading();
             console.log(response);
@@ -179,25 +178,25 @@
     option && myChart.setOption(option);
 
 
-    axios.get('http://192.168.50.17:7788/node/count')
+    axios.get('/node/count')
         .then(function (response) {
             var nodecount = response.data.data;
             document.getElementById("NODE").innerHTML += nodecount;
 
         });
-    axios.get('http://192.168.50.17:7788/node/vulCount')
+    axios.get('/node/vulCount')
         .then(function (response) {
             var vulCount = response.data.data;
             document.getElementById("VULNERABILITIES").innerHTML += vulCount;
 
         });
-    axios.get('http://192.168.50.17:7788/service/count')
+    axios.get('/service/count')
         .then(function (response) {
             var servicecount = response.data.data;
             document.getElementById("SERVICE").innerHTML += servicecount;
 
         });
-    axios.get('http://192.168.50.17:7788/link/count')
+    axios.get('/link/count')
         .then(function (response) {
             var linkcount = response.data.data;
             document.getElementById("LINKS").innerHTML += linkcount;
@@ -275,7 +274,7 @@
     });
     //显示加载动画
     myChart3.showLoading();
-    axios.get('http://192.168.50.17:7788/graph/getGraph')
+    axios.get('/graph/getGraph')
         .then(function (response) {
             myChart3.hideLoading();
             let graph = response.data.data;
@@ -327,7 +326,7 @@
         }]
     };
 
-    axios.get('http://192.168.50.17:7788/service/vulCount')
+    axios.get('/service/vulCount')
         .then(function (response) {
             console.log(response);
             let service = response.data.data;
@@ -362,6 +361,24 @@
         });
     option1 && myChart1.setOption(option1);
 
+    // 拓扑图节点恢复原来大小
+    let nodeResize = function(resetSize, reSetGraph) {
+        if (resetSize) {
+            // 重新设置大小
+            for(let node of curr_node) {
+                node.symbolSize = 10;
+            }
+        }
+        if (reSetGraph) {
+            // 重新绘制拓扑图
+            myChart3.setOption({
+                series: {
+                    nodes: curr_node
+                }
+            });
+        }
+    };
+
     //数据表格
     layui.use(['table', 'layer', 'element', 'layer', 'util'], function () {
         var table = layui.table
@@ -372,29 +389,53 @@
         $(function () {
             //服务 表格
             $("#s_table").click(function () {
-                $("#blanktable").load("Table/Service.html");
+                $("#blanktable").load("table/service.html");
             });
             //节点 表格
             $("#n_table").click(function () {
-                $("#blanktable").load("Table/Nodes.html");
+                nodeResize(true, true);
+                axios({
+                    method: 'get',
+                    url: 'http://localhost:7788/node/list?page=1&limit=30',
+                    headers: {
+                        satoken: localStorage.getItem('satoken')
+                    }
+                })
+                .then(function (response) {
+                    localStorage.setItem("safety-level", "所有节点");
+                    let array = response.data.data;
+                    let nodes = [];
+                    for(let elem of array) {
+                        nodes.push(elem.node);
+                    }
+                    localStorage.setItem("safety-nodes", JSON.stringify(nodes));
+                    $("#blanktable").load("table/safety-node.html");
+                });
             });
 
             //边 表格
             $("#l_table").click(function () {
-                $("#blanktable").load("Table/Links.html");
+                $("#blanktable").load("table/link.html");
             });
 
             //可破坏 表格
+            // 拦截器第二次不生效，实在没办法啦，手动硬塞，我也是够啦
             $("#level_pohuai").click(function () {
-                axios.post('http://192.168.50.17:7788/node/safety/1')
+                nodeResize(true, false);
+                axios({
+                    method: 'get',
+                    url: 'http://localhost:7788/node/safety/1',
+                    headers: {
+                        satoken: localStorage.getItem('satoken')
+                    }
+                })
                     .then(function (response) {
                         var dd = response.data.data;
                         var aa = [];
+                        localStorage.setItem("safety-level", "可破坏");
+                        localStorage.setItem("safety-nodes", JSON.stringify(dd));
                         for (let i = 0; i < dd.length; i++) {
                             aa.push(dd[i].id);
-                        }
-                        for (var i = 0; i < idArray1.length; i++) {
-                            curr_node[i].symbolSize = 10;
                         }
                         for (var i = 0; i < aa.length; i++) {
                             for (var j = 0; j < idArray1.length; j++) {
@@ -403,28 +444,28 @@
                                 }
                             }
                         }
-                        myChart3.setOption({
-                            series: {
-                                nodes: curr_node,
-                                links: curr_link
-                            }
-                        });
+                        nodeResize(false, true);
+                        $("#blanktable").load("./table/safety-node.html");
                     });
-                $("#blanktable").load("Table/C_Node_1.html");
             });
 
             //可利用 表格
             $("#level_liyong").click(function () {
-                axios.post('http://192.168.50.17:7788/node/safety/2')
+                nodeResize(true, false);
+                axios({
+                    method: 'get',
+                    url: 'http://localhost:7788/node/safety/2',
+                    headers: {
+                        satoken: localStorage.getItem('satoken')
+                    }
+                })
                     .then(function (response) {
                         let dd = response.data.data;
                         let aa = []; //可利用节点数组
+                        localStorage.setItem("safety-level", "可利用");
+                        localStorage.setItem("safety-nodes", JSON.stringify(dd));
                         for (let i = 0; i < dd.length; i++) {
                             aa.push(dd[i].id);
-                        }
-                        //初始化symbolSize
-                        for (var i = 0; i < idArray1.length; i++) {
-                            curr_node[i].symbolSize = 10;
                         }
                         //修改symbolSize
                         for (var i = 0; i < aa.length; i++) {
@@ -434,28 +475,28 @@
                                 }
                             }
                         }
-                        //重绘拓扑
-                        myChart3.setOption({
-                            series: {
-                                nodes: curr_node,
-                                links: curr_link
-                            }
-                        });
+                        nodeResize(false, true);
+                        $("#blanktable").load("./table/safety-node.html");
                     });
-                $("#blanktable").load("Table/C_Node_2.html");
             });
 
             //可控制 表格
             $("#level_kongzhi").click(function () {
-                axios.post('http://192.168.50.17:7788/node/safety/3')
+                nodeResize(true, false);
+                axios({
+                    method: 'get',
+                    url: 'http://localhost:7788/node/safety/3',
+                    headers: {
+                        satoken: localStorage.getItem('satoken')
+                    }
+                })
                     .then(function (response) {
                         let dd = response.data.data;
                         let aa = []; //可利用节点数组
+                        localStorage.setItem("safety-level", "可控制");
+                        localStorage.setItem("safety-nodes", JSON.stringify(dd));
                         for (let i = 0; i < dd.length; i++) {
                             aa.push(dd[i].id);
-                        }
-                        for (var i = 0; i < idArray1.length; i++) {
-                            curr_node[i].symbolSize = 10;
                         }
                         for (var i = 0; i < aa.length; i++) {
                             for (var j = 0; j < idArray1.length; j++) {
@@ -464,14 +505,9 @@
                                 }
                             }
                         }
-                        myChart3.setOption({
-                            series: {
-                                nodes: curr_node,
-                                links: curr_link
-                            }
-                        });
+                        nodeResize(false, true);
+                        $("#blanktable").load("./table/safety-node.html");
                     });
-                $("#blanktable").load("Table/C_Node_3.html");
             });
         });
     });

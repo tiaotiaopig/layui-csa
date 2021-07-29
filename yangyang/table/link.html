@@ -10,15 +10,8 @@
     <title>网络态势感知系统</title>
     <!-- 引入 layui.css -->
     <link rel="stylesheet" href="//unpkg.com/layui@2.6.8/dist/css/layui.css"/>
-
-    <!-- 引入 echarts -->
-    <script src="https://cdn.jsdelivr.net/npm/echarts@5.1.2/dist/echarts.min.js"></script>
-    <!-- 引入 axios -->
-    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <!-- 引入 layui.js -->
     <script src="//unpkg.com/layui@2.6.8/dist/layui.js"></script>
-    <!-- 引入 jquery.js -->
-    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.js"></script>
 
 </head>
 <body>
@@ -30,7 +23,7 @@
         <div class="layui-row layui-col-space15">
             <div  class="layui-col-md12">
                 <fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
-                    <legend>Link Table</legend>
+                    <legend>节点列表</legend>
                 </fieldset>
                 <div id= "hhh" class="layui-panel" style="height: 675px" >
                     <table class="layui-hide" id="test"  lay-filter="test"></table>
@@ -55,8 +48,10 @@
         // 表格数据渲染
         table.render({
             elem: '#test'
-            , url: 'http://192.168.50.17:7788/link/page'
+            , url: 'http://localhost:7788/link/page'
             ,even: true //开启隔行背景
+            // 加上satoken,不然请求数据会失败
+            ,headers: {satoken: localStorage.getItem("satoken")}
             ,parseData: function(res){ //res 即为原始返回的数据
                 console.log("res")
                 console.log(res.data)

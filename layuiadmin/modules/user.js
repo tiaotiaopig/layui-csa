@@ -55,7 +55,7 @@ layui.define('form', function (exports) {
 	//更换图形验证码
 	$body.on('click', '#LAY-user-get-vercode', function () {
 		var othis = $(this);
-		this.src = 'http://localhost:7788/user/captcha?t=' + new Date().getTime()
+		this.src = 'http://192.168.50.17:7788/user/captcha?t=' + new Date().getTime()
 	});
 
 	//对外暴露的接口
