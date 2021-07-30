@@ -34,12 +34,7 @@
 
 </div>
 
-<!-- 引入 echarts -->
-<script src="https://cdn.jsdelivr.net/npm/echarts@5.1.2/dist/echarts.min.js"></script>
-<!-- 引入 axios -->
-<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-
-<!-- Node表 -->
+<!-- 服务详情表 -->
 <script>
     layui.use(['table', 'layer'], function () {
         var table = layui.table
@@ -48,7 +43,7 @@
         // 表格数据渲染
         table.render({
             elem: '#test'
-            , url: 'http://localhost:7788/service/all'
+            , url: localStorage.getItem('baseUrl') + '/service/all'
             ,even: true //开启隔行背景
             // 加上satoken,不然请求数据会失败
             ,headers: {satoken: localStorage.getItem("satoken")}

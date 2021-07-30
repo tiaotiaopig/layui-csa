@@ -362,7 +362,7 @@
     option1 && myChart1.setOption(option1);
 
     // 拓扑图节点恢复原来大小
-    let nodeResize = function(resetSize, reSetGraph) {
+    let nodeResize = function(resetSize = true, reSetGraph = true) {
         if (resetSize) {
             // 重新设置大小
             for(let node of curr_node) {

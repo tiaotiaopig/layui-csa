@@ -69,7 +69,7 @@
         // 表格数据渲染
         table.render({
             elem: '#tabledata'
-             , url: 'http://localhost:7788/node/list'
+             , url: localStorage.getItem('baseUrl') + '/node/list'
              // 加上satoken,不然请求数据会失败
             ,headers: {satoken: localStorage.getItem("satoken")}
             ,even: true //开启隔行背景

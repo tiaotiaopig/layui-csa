@@ -105,13 +105,16 @@
             var $btn = $(obj.elem);
             $btn.html("<i class=\"layui-icon layui-icon-loading layui-anim layui-anim-rotate layui-anim-loop\"></i>登录中");
 
-            axios.post('http://127.0.0.1:7788/user/doLogin', {
+            axios.post('/user/doLogin', {
                 params: obj.field,
                 token: ""
             })
             .then(function (response) {
                 let data = response.data.data;
+                // 保存登录token
                 localStorage.setItem("satoken", data.saToken);
+                // layui数据表格的方法渲染，没法设置baseUrl,只能这里设置了
+                localStorage.setItem("baseUrl", "http://localhost:7788");
                 if (data.userMsg == 1 && data.pwdMsg == 1 && data.captchaMsg == 1) {
                     console.log("成功：",data);
                     $btn.html("<i class=\"layui-icon layui-icon-face-smile-fine\"></i>登录成功");
