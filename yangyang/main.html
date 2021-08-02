@@ -266,6 +266,12 @@
                 label: {
                     position: 'top'
                 },
+                emphasis: {
+                    focus: 'adjacency',
+                    lineStyle: {
+                        width: 5
+                    }
+                },
                 force: {
                     repulsion: 100
                 }
@@ -396,7 +402,7 @@
                 nodeResize(true, true);
                 axios({
                     method: 'get',
-                    url: 'http://localhost:7788/node/list?page=1&limit=30',
+                    url: localStorage.getItem('baseUrl') + '/node/list?page=1&limit=30',
                     headers: {
                         satoken: localStorage.getItem('satoken')
                     }
@@ -424,7 +430,7 @@
                 nodeResize(true, false);
                 axios({
                     method: 'get',
-                    url: 'http://localhost:7788/node/safety/1',
+                    url: localStorage.getItem('baseUrl') + '/node/safety/1',
                     headers: {
                         satoken: localStorage.getItem('satoken')
                     }
@@ -454,7 +460,7 @@
                 nodeResize(true, false);
                 axios({
                     method: 'get',
-                    url: 'http://localhost:7788/node/safety/2',
+                    url: localStorage.getItem('baseUrl') + '/node/safety/2',
                     headers: {
                         satoken: localStorage.getItem('satoken')
                     }
@@ -485,7 +491,7 @@
                 nodeResize(true, false);
                 axios({
                     method: 'get',
-                    url: 'http://localhost:7788/node/safety/3',
+                    url: localStorage.getItem('baseUrl') + '/node/safety/3',
                     headers: {
                         satoken: localStorage.getItem('satoken')
                     }
