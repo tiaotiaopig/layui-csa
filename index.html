@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>网络态势感知系统</title>
+    <title>态势计算</title>
     <meta name="renderer" content="webkit">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport"
@@ -91,32 +91,30 @@
         <!-- 侧边菜单 -->
         <div class="layui-side layui-side-menu">
             <div class="layui-side-scroll">
-                <div class="layui-logo" lay-href="./reference-page/home/console.html">
+                <!-- <div class="layui-logo" lay-href="./reference-page/home/console.html"> -->
+                    <div class="layui-logo" lay-href="./yangyang/situation-show.html">
                     <img src="./images/logo-white.png" style="margin-top: -5px;width:25px;"/>
                     <span>网络态势感知系统</span>
                 </div>
-
                 <ul class="layui-nav layui-nav-tree" lay-shrink="all" id="LAY-system-side-menu"
                     lay-filter="layadmin-system-side-menu">
-                    <li data-name="user" class="layui-nav-item layui-nav-itemed">
+<!-- 关键节点 -->
+                    <li data-name="user" class="layui-nav-item ">
                         <a href="javascript:;" lay-tips="网络拓扑" lay-direction="2">
                             <i class="layui-icon layui-icon-chart"></i>
                             <cite>关键节点</cite>
                         </a>
                         <dl class="layui-nav-child">
                             <dd>
-                                <a lay-href="./yangyang/topo-show.html">拓扑展示</a>
+                                <a lay-href="./yangyang/topo-show.html">拓扑生成</a>
                             </dd>
                             <dd>
-                                <a lay-href="./yangyang/node-table.html">节点数据</a>
-                            </dd>
-                            <dd>
-                                <a lay-href="./yangyang/link-table.html">连接数据</a>
+                                <a lay-href="./yangyang/main.html">拓扑展示</a>
                             </dd>
                         </dl>
                     </li>
-
-                    <li data-name="set" class="layui-nav-item">
+<!-- 态势感知 -->
+                    <li data-name="set" class="layui-nav-item layui-nav-itemed">
                         <a href="javascript:;" lay-tips="态势感知" lay-direction="2">
                             <i class="layui-icon layui-icon-cellphone"></i>
                             <cite>态势感知</cite>
@@ -125,12 +123,24 @@
                             <dd>
                                 <a lay-href="./yangyang/csa-elem.html">态势要素</a>
                             </dd>
-<!--                            <dd>-->
-<!--                                <a lay-href="./yangyang/NodeTable.html">态势感知</a>-->
-<!--                            </dd>-->
-<!--                            <dd>-->
-<!--                                <a lay-href="./yangyang/NodeTable.html">态势预测</a>-->
-<!--                            </dd>-->
+                            <dd>
+                                <a lay-href="./yangyang/situation-show.html">态势计算</a>
+                            </dd>
+                        </dl>
+                    </li>
+<!-- 数据 -->
+                    <li data-name="user" class="layui-nav-item ">
+                        <a href="javascript:;" lay-tips="数据展示" lay-direction="2">
+                            <i class="layui-icon layui-icon-chart"></i>
+                            <cite>数据</cite>
+                        </a>
+                        <dl class="layui-nav-child">
+                            <dd>
+                                <a lay-href="./yangyang/node-table.html">节点数据</a>
+                            </dd>
+                            <dd>
+                                <a lay-href="./yangyang/link-table.html">连接数据</a>
+                            </dd>
                         </dl>
                     </li>
                     <li data-name="set" class="layui-nav-item">
@@ -139,13 +149,12 @@
                             <cite>系统设置</cite>
                         </a>
                         <dl class="layui-nav-child">
-                            <dd>
-<!--                                <a lay-href="./system/list_deps.html">部门管理</a>-->
+                            <!-- <dd>
                                 <a lay-href="./yangyang/node.html">部门管理</a>
                             </dd>
                             <dd>
                                 <a lay-href="./system/list_accounts.html">系统账户管理</a>
-                            </dd>
+                            </dd> -->
                             <dd>
                                 <a lay-href="./system/password.html">修改密码</a>
                             </dd>
@@ -175,6 +184,8 @@
                 <ul class="layui-tab-title" id="LAY_app_tabsheader">
                     <li lay-id="home/console.html" lay-attr="home/console.html" class="layui-this"><i
                             class="layui-icon layui-icon-home"></i></li>
+                            <!-- <li lay-id="" lay-attr="" class="layui-this"><i
+                                class="layui-icon layui-icon-home"></i></li> -->
                 </ul>
             </div>
         </div>
@@ -182,7 +193,7 @@
         <!-- 主体内容 -->
         <div class="layui-body" id="LAY_app_body">
             <div class="layadmin-tabsbody-item layui-show">
-                <iframe src="./yangyang/main.html" frameborder="0" class="layadmin-iframe"></iframe>
+                <iframe src="./yangyang/situation-show.html" frameborder="0" class="layadmin-iframe"></iframe>
             </div>
         </div>
         <!-- 辅助元素，一般用于移动设备下遮罩 -->

@@ -8,7 +8,7 @@ axios.defaults.withCredentials = true;  //true允许跨域
 // application/json
 axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8';
 // // 设置base_url
-axios.defaults.baseURL = 'http://localhost:7788';
+axios.defaults.baseURL = 'http://192.168.50.17:7788';
 // const myaxios = axios.create({
 //   baseURL: 'http://localhost:7788',
 //   withCredentials: true,

@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+    <title>态势展示界面</title>
+    <!-- 引入 layui.css -->
+    <link rel="stylesheet" href="//unpkg.com/layui@2.6.8/dist/css/layui.css"/>
+    <!-- 引入 layui.js -->
+    <script src="//unpkg.com/layui@2.6.8/dist/layui.js"></script>
+    <!-- 引入 jquery.js -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.js"></script>
+
+</head>
+<body>
+<!-- 表格 -->
+<script src="../layuiadmin/layui/layui.all.js"></script>
+<div class="layui-row  layui-col-space15">
+    <div class="layui-bg-gray" style="padding: 10px;">
+
+
+    </div>
+<!-- 节点效能、传输效能 -->
+    <div class="layui-col-md3">
+        <div style="box-shadow:black" class="layui-panel" id="">
+            <!-- <table class="layui-hide" id="test"  lay-filter="test"></table> -->
+            <div  style="height: 850px;  margin: 20px;  padding:  10px;  ">
+                <div  style="border:0px solid black; height: 400px; margin-bottom: 20px;">
+                    <div class="layui-card-header">
+                        <h3 style="text-align: center">节点处理效能</h3> 
+                    </div>
+                    
+                    <div  id="topone" style="height: 400px">
+
+                    </div>
+                  
+                </div>
+                <div   style="border:0px solid black; height: 400px;">
+                    <div class="layui-card-header">
+                        <h3 style="text-align: center">链路传输效能</h3>
+                    </div>
+                    <div id="belowone" style="height: 400px">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+<!-- 拓扑 -->
+    <div class="layui-col-md6">
+        <div style="box-shadow:black"   class="layui-panel">
+            <div id="topo"  style="height: 770px;  margin: 20px;  padding: 50px 30px; ">
+             
+            </div>
+        </div>
+    </div>
+
+ <!-- 结构效能、整体效能 -->
+ <div class="layui-col-md3">
+    <div style="box-shadow:black" class="layui-panel" id="">
+        <!-- <table class="layui-hide" id="test"  lay-filter="test"></table> -->
+        <div  style="height: 850px;  margin: 20px;  padding:  10px;  ">
+            <div  style="border:0px solid black; height: 400px; margin-bottom: 20px;">
+                <div class="layui-card-header">
+                    <h3 style="text-align: center">拓扑结构效能</h3>
+                </div>
+                <div id="toptwo" style="height: 400px">
+
+                </div>
+            </div>
+            <div   style="border:0px solid black; height: 400px;">
+                <div class="layui-card-header" >
+                    <h3 style="text-align: center ;">网络整体效能</h3>
+                </div>
+                <div id="belowtwo" style="height: 400px; margin-top: 40px;">
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+</div>
+<!-- 引入 echarts -->
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.1.2/dist/echarts.min.js"></script>
+<!-- 引入 axios -->
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<!-- 引入自定义axios -->
+<script src="../api/myaxios.js"></script>
+
+<script>
+// 拓扑
+    var curr_node = [];
+    var curr_link = [];
+    var curr_legend = [];
+    var curr_categories =[];
+    layui.use(['table', 'layer'], function () {
+        var table = layui.table
+            , layer = layui.layer;
+
+  
+    });
+
+    // 基于准备好的dom，初始化echarts实例
+    var myChart = echarts.init(document.getElementById('topo'));
+    // 先设置图表显示样式
+    myChart.setOption({
+        title: {
+            text: '网络拓扑',
+            top: 'top',
+            left: 'center'
+        },
+        // 设置节点详情
+        tooltip: {
+            trigger: 'item',
+            formatter: function (params) {
+                let data = params.data;
+                if (params.dataType === 'edge') {
+                    return `
+                      <h4>${params.name}</h4>
+                      <span>${'源: ' + data.source}</span><br/>
+                      <span>${'目标: ' + data.target}</span><br/>
+                      <span>${'链路类型: ' + data.link.linkType}</span><br/>
+                      <span>${'带宽: ' + data.link.bandwidth}Mbps</span><br/>
+                      <span>${'信噪比: ' + data.link.sn}dB</span><br/>
+                      `;
+                }
+                if (params.dataType === 'node') {
+                    return `
+                      <h4>节点详情</h4>
+                      <span>${'子网: ' + data.category}</span><br/>
+                      <span>${'名称: ' + data.name}</span><br/>
+                      <span>${'IP: ' + data.node.nodeIp}</span><br/>
+                      <span>${'MAC: ' + data.node.nodeMac}</span><br/>
+                      <span>${'可控级别: ' + data.node.controllableLevel}</span><br/>
+                      <span>${'服务数量: ' + data.node.serviceSum}</span><br/>
+                      `;
+                }
+            }
+        },
+        legend: [],
+        series: [
+            {
+                type: 'graph',
+                layout: 'force',
+                draggable: true,
+                nodes: [],
+                links: [],
+                categories: [],
+                roam: true,
+                lineStyle: {
+                    color: 'source',
+                    curveness: 0
+                },
+                label: {
+                    position: 'top'
+                },
+                emphasis: {
+                    focus: 'adjacency',
+                    lineStyle: {
+                        width: 5
+                    }
+                },
+                force: {
+                    repulsion: 100
+                }
+            }
+        ]
+    });
+
+
+    //显示加载动画
+    myChart.showLoading();
+
+    axios.get('/graph/getGraph')
+        .then(function (response) {
+            myChart.hideLoading();
+
+            let graph = response.data.data;
+            console.log(response);
+            curr_node = graph.nodes;
+            curr_link = graph.links;
+            //显示不同子网
+            //curr_categories = graph.categories;
+            let idArray = [];
+            console.log("graph");
+            console.log(graph);
+            for (let elem of curr_node) {
+
+                idArray.push(elem.node.id);
+            }
+
+            console.log("idArray");
+            console.log(idArray);
+           // curr_node = idArray;
+            myChart.setOption({
+                legend: curr_categories,
+                series: {
+                    nodes: curr_node,
+                    links: curr_link
+                    //显示不同子网
+                    //,categories: curr_categories
+                }
+
+            });
+
+        });
+
+
+//左上
+var chartDom11 = document.getElementById('topone');
+var myChart11 = echarts.init(chartDom11);
+var option11;
+
+option11 = {
+  tooltip: {
+    formatter: '{a} <br/>{b} : {c}%'
+  },
+  series: [
+    {
+      name: 'Pressure',
+      type: 'gauge',
+      progress: {
+        show: true
+      },
+      detail: {
+        valueAnimation: true,
+        formatter: '{value}'
+      },
+      data: [
+        {
+          value: 50,
+          name: '节点处理效能'
+        }
+      ]
+    }
+  ]
+};
+
+option11 && myChart11.setOption(option11);
+
+axios.get('/situation/procession')
+        .then(function (response) {
+            myChart11.hideLoading();
+
+            let n_data = response.data.data;
+            n_data = n_data.toFixed(1);
+            //console.log("n_data");
+            //console.log(n_data);
+
+           
+            myChart11.setOption({
+                series: [
+                                    {
+                        name: 'Pressure',
+                        type: 'gauge',
+                        progress: {
+                            show: true
+                        },
+                        detail: {
+                            valueAnimation: true,
+                            formatter: '{value}'
+                        },
+                        data: [
+                            {
+                            value: n_data,
+                            name: '节点处理效能'
+                            }
+                        ]
+                        }
+                ]
+            });
+        });
+
+
+//左下
+var chartDom12 = document.getElementById('belowone');
+var myChart12 = echarts.init(chartDom12);
+var option12;
+
+option12 = {
+  tooltip: {
+    formatter: '{a} <br/>{b} : {c}%'
+  },
+  series: [
+    {
+      name: 'Pressure',
+      type: 'gauge',
+      progress: {
+        show: true
+      },
+      detail: {
+        valueAnimation: true,
+        formatter: '{value}'
+      },
+      data: [
+        {
+          value: 50,
+          name: 'SCORE'
+        }
+      ]
+    }
+  ]
+};
+
+option12 && myChart12.setOption(option12);
+axios.get('/situation/phyTrans')
+        .then(function (response) {
+            myChart12.hideLoading();
+
+            let n_data = response.data.data;
+            n_data = n_data.toFixed(1);
+            //console.log("n_data");
+            //console.log(n_data);
+
+           
+            myChart12.setOption({
+                series: [
+                                    {
+                        name: 'Pressure',
+                        type: 'gauge',
+                        progress: {
+                            show: true
+                        },
+                        detail: {
+                            valueAnimation: true,
+                            formatter: '{value}'
+                        },
+                        data: [
+                            {
+                            value: n_data,
+                            name: '链路传输效能'
+                            }
+                        ]
+                        }
+                ]
+            });
+        });
+
+
+//右上
+var chartDom21 = document.getElementById('toptwo');
+var myChart21 = echarts.init(chartDom21);
+var option21;
+
+option21 = {
+  tooltip: {
+    formatter: '{a} <br/>{b} : {c}%'
+  },
+  series: [
+    {
+      name: 'Pressure',
+      type: 'gauge',
+      progress: {
+        show: true
+      },
+      detail: {
+        valueAnimation: true,
+        formatter: '{value}'
+      },
+      data: [
+        {
+          value: 50,
+          name: 'SCORE'
+        }
+      ]
+    }
+  ]
+};
+
+option21 && myChart21.setOption(option21);
+axios.get('/situation/topology')
+        .then(function (response) {
+            myChart21.hideLoading();
+
+            let n_data = response.data.data;
+            //console.log("n_data");
+            //console.log(n_data);
+
+           
+            myChart21.setOption({
+                series: [
+                                    {
+                        name: 'Pressure',
+                        type: 'gauge',
+                        progress: {
+                            show: true
+                        },
+                        detail: {
+                           
+                            valueAnimation: true,
+                            formatter: '{value}'
+                        },
+                        data: [
+                            {
+                            value: n_data,
+                            name: '拓扑结构效能'
+                            }
+                        ]
+                        }
+                ]
+            });
+        });
+
+
+//右下
+var chartDom22 = document.getElementById('belowtwo');
+var myChart22 = echarts.init(chartDom22);
+var option22;
+ 
+option22 = {
+  series: [
+    {
+      type: 'gauge',
+      startAngle: 180,
+      endAngle: 0,
+      min: 0,
+      max: 1,
+      splitNumber: 8,
+      axisLine: {
+        lineStyle: {
+          width: 6,
+          color: [
+            [0.25, '#FF6E76'],
+            [0.5, '#FDDD60'],
+            [0.75, '#58D9F9'],
+            [1, '#7CFFB2']
+          ]
+        }
+      },
+      pointer: {
+        icon: 'path://M12.8,0.7l12,40.1H0.7L12.8,0.7z',
+        length: '30%',
+        width: 20,
+        offsetCenter: [0, '-60%'],
+        itemStyle: {
+          color: 'auto'
+        }
+      },
+      axisTick: {
+        length: 12,
+        lineStyle: {
+          color: 'auto',
+          width: 2
+        }
+      },
+      splitLine: {
+        length: 20,
+        lineStyle: {
+          color: 'auto',
+          width: 5
+        }
+      },
+      axisLabel: {
+        color: '#464646',
+        fontSize: 30,
+        distance: -60,
+        formatter: function (value) {
+          if (value === 0.875) {
+            return 'A';
+          } else if (value === 0.625) {
+            return 'B';
+          } else if (value === 0.375) {
+            return 'C';
+          } else if (value === 0.125) {
+            return 'D';
+          }
+          return '';
+        }
+      },
+      title: {
+        offsetCenter: [0, '-20%'],
+        fontSize: 20
+      },
+      detail: {
+        fontSize: 30,
+        offsetCenter: [0, '0%'],
+        valueAnimation: true,
+        formatter: function (value) {
+          return Math.round(value * 100) + '分';
+        },
+        color: 'auto'
+      },
+      data: [
+        {
+          value: 0.7,
+          name: '网络整体效能'
+          
+        }
+      ]
+    }
+  ]
+};
+
+option22 && myChart22.setOption(option22);
+
+axios.get('/situation/overall')
+        .then(function (response) {
+            myChart22.hideLoading();
+
+            let n_data = response.data.data;
+            //console.log("n_data");
+            //console.log(n_data);
+            n_data = n_data*0.01;
+           
+            myChart22.setOption({
+              series: [
+    {
+      type: 'gauge',
+      startAngle: 180,
+      endAngle: 0,
+      min: 0,
+      max: 1,
+      splitNumber: 8,
+      data: [
+        {
+          value: n_data,
+          name: '网络整体效能'
+          
+        }
+      ]
+    }
+  ]
+            });
+        });
+
+layui.use(['jquery','table', 'layer'], function () {
+        var table = layui.table;
+        var layer = layui.layer;  
+         var $ = layui.$;
+         //1节点处理效能
+            $(document).on('click', '#topone', function() {
+                layer.open({
+                    type: 2, //Layer提供了5种层类型。可传入的值有：0（信息框，默认）1（页面层）2（iframe层）3（加载层）4（tips层）,
+                    shade:0.1, //遮罩层透明度
+                    area:['650px','400px'], //弹出层宽高
+                    title:'节点处理效能详情',//弹出层标题
+                    content: './edit-window/node transmission.html'//弹出的页面
+                    ,success: function (layero, index) {
+                        var body = layer.getChildFrame('body', index);
+                        var iframeWin = window[layero.find('iframe')[0]['name']];
+                      axios.get('/situation/nodeProElem')
+                              .then(function (response) {
+                                  var dd = response.data.data;
+                                  var throughout = dd.throughout;
+                                  var cp = dd.cp;
+                                  var serviceNum = dd.serviceNum;
+                                  var vul = dd.vul;
+                                  body.find("#throughout").val(throughout);
+                                  body.find("#cp").val(cp);
+                                  body.find("#serviceNum").val(serviceNum);
+                                  body.find("#vul").val(vul);
+                              });    
+                    }
+                    ,btn: [ '确定']
+                    ,yes: function(index, layero){
+                        var body = layer.getChildFrame('body', index);
+                        layer.close(index); //关闭弹层
+                    }
+                    ,cancel: function(){
+                        //右上角关闭回调
+                        //return false 开启该代码可禁止点击该按钮关闭
+                    }
+                    ,shadeClose: true //点击遮罩关闭
+                });
+        });
+         //2链路传输效能
+         $(document).on('click', '#belowone', function() {
+                layer.open({
+                    type: 2, //Layer提供了5种层类型。可传入的值有：0（信息框，默认）1（页面层）2（iframe层）3（加载层）4（tips层）,
+                    shade:0.1, //遮罩层透明度
+                    area:['650px','400px'], //弹出层宽高
+                    title:'链路传输效能详情',//弹出层标题
+                    content: './edit-window/network transmission.html'//弹出的页面
+                    ,success: function (layero, index) {
+                        var body = layer.getChildFrame('body', index);
+                        var iframeWin = window[layero.find('iframe')[0]['name']];
+                      axios.get('/situation/phyTransElem')
+                              .then(function (response) {
+                                  var dd = response.data.data;
+                                  var bandwidth = dd.bandwidth;
+                                  var delay = dd.delay;
+                                  var losePackage = dd.losePackage;
+                                  var sn = dd.sn;
+                                  body.find("#bandwidth").val(bandwidth);
+                                  body.find("#delay").val(delay);
+                                  body.find("#losePackage").val(losePackage);
+                                  body.find("#sn").val(sn);
+                              });    
+                    }
+                    ,btn: [ '确定']
+                    ,yes: function(index, layero){
+                        var body = layer.getChildFrame('body', index);
+                        layer.close(index); //关闭弹层
+                    }
+                    ,cancel: function(){
+                        //右上角关闭回调
+                        //return false 开启该代码可禁止点击该按钮关闭
+                    }
+                    ,shadeClose: true //点击遮罩关闭
+                });
+        });
+              //3拓扑结构效能
+              $(document).on('click', '#toptwo', function() {
+                layer.open({
+                    type: 2, //Layer提供了5种层类型。可传入的值有：0（信息框，默认）1（页面层）2（iframe层）3（加载层）4（tips层）,
+                    shade:0.1, //遮罩层透明度
+                    area:['650px','550px'], //弹出层宽高
+                    title:'拓扑结构效能详情',//弹出层标题
+                    content: './edit-window/topological structure.html'//弹出的页面
+                    ,success: function (layero, index) {
+                        var body = layer.getChildFrame('body', index);
+                        var iframeWin = window[layero.find('iframe')[0]['name']];
+                      axios.get('/situation/topologyElem')
+                              .then(function (response) {
+                                  var dd = response.data.data;
+                                  var nodeCount = dd.nodeCount;
+                                  var linkCount = dd.linkCount;
+                                  var nodeConn = dd.nodeConn;
+                                  var linkConn = dd.linkConn;
+                                  var nodeStrength = dd.nodeStrength;
+                                  var centrality = dd.centrality;
+                                  var avgPathLength = dd.avgPathLength;
+                                  var wccoefficient = dd.wccoefficient;
+
+    
+                                  body.find("#nodeCount").val(nodeCount);
+                                  body.find("#linkCount").val(linkCount);
+                                  body.find("#nodeConn").val(nodeConn);
+                                  body.find("#linkConn").val(linkConn);
+                                  body.find("#nodeStrength").val(nodeStrength);
+                                  body.find("#centrality").val(centrality);
+                                  body.find("#avgPathLength").val(avgPathLength);
+                                  body.find("#wccoefficient").val(wccoefficient);
+                              });    
+                    }
+                    ,btn: [ '确定']
+                    ,yes: function(index, layero){
+                        var body = layer.getChildFrame('body', index);
+                        layer.close(index); //关闭弹层
+                    }
+                    ,cancel: function(){
+                        //右上角关闭回调
+                        //return false 开启该代码可禁止点击该按钮关闭
+                    }
+                    ,shadeClose: true //点击遮罩关闭
+                });
+        });
+        });
+
+//弹窗
+
+
+</script>
+
+</body>
+</html>

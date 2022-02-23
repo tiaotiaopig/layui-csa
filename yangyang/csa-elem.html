@@ -200,7 +200,7 @@
             left:'left'
         },
         toolbox: {
-            show: true,
+            show: false,
             orient: 'vertical',
             left: 'right',
             top: 'center',
@@ -224,10 +224,10 @@
                 type: 'value',
                 name: '电磁范围',
                 min: 0,
-                max: 5000,
-                interval: 1000,
+                max: 3000,
+                interval: 300,
                 axisLabel: {
-                    formatter: '{value} Ghz'
+                    formatter: '{value} Mhz'
                 }
             },
             {
@@ -651,7 +651,7 @@
             left: 'left'
         },
         toolbox: {
-            show: true,
+            show: false,
             feature: {
                 mark: {show: true},
                 dataView: {show: true, readOnly: false},

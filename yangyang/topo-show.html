@@ -37,6 +37,7 @@
         <div class="layui-btn-container">
             <button class="layui-btn layui-btn-sm" lay-event="getCheckNode">生成拓扑</button>
             <button class="layui-btn layui-btn-sm" lay-event="getImpNodes">显示关键节点</button>
+            <button class="layui-btn layui-btn-sm" lay-event="getImpLinks">显示关键链路</button>
             <button class="layui-btn layui-btn-sm" lay-event="getCheckLength">获取选中数目</button>
             <button class="layui-btn layui-btn-sm" lay-event="isAll">验证是否全选</button>
 
@@ -50,7 +51,7 @@
         <div class="layui-col-md6">
             <div style="box-shadow:black"   class="layui-panel">
                 <div id="topo"
-                     style="height: 609px;  margin: 20px;  padding: 50px 30px;  ">
+                     style="height: 800px;  margin: 20px;  padding: 50px 30px;  ">
                     拓扑图
                 </div>
             </div>
@@ -149,6 +150,7 @@
 
             ]]
             , page: true
+            , limit: 20
         });
 
         // 头工具栏事件
@@ -175,17 +177,21 @@
                     })
                         .then(function (response) {
                             curr_link = response.data.data;
+                            console.log("curr_link");
+                            console.log(curr_link[15]);
                             console.log("response");
                             console.log(response);
                             myChart.hideLoading();
+                          
                             myChart.setOption({
                                 // legend: graph.categories,
                                 series: {
                                     nodes: curr_node,
-                                    links: curr_link
-                                    , lineStyle: {
+                                    links: curr_link,
+                                    lineStyle: {
                                         color: 'source',
                                         curveness: 0
+                                       
                                     },
                                     emphasis: {
                                         focus: 'adjacency',
@@ -233,6 +239,9 @@
                                     }
                                 }
                             }
+                            // curr_link[15].lineStyle={
+                            //     color: 'pink'
+                            // }
                             myChart.setOption({
                                 series: {
                                     // nodes: nodeData1,
@@ -243,7 +252,93 @@
                             });
                         });
                     break;
+                case 'getImpLinks':
+                //let nodeData1 = checkStatus.data;
+                let idArray2 = [];
+                    for (let elem of curr_node) {
+                        idArray2.push(elem.node.id);
+                    }
+                    console.log("curr_link");
+                    console.log(curr_link);
 
+                    //获取关键链路
+                    axios.post('/link/keyLink', {
+                    })
+                    .then(function (res) {
+                            let rlink = res.data.data;
+                            console.log("rlink");
+                            console.log(rlink);
+                            let len = rlink.length;
+                            let ll = [];
+                            for(let j=0;j<curr_link.length;j++){
+                                for(let i =0;i<len;i++ ){
+                                    if(rlink[i].sourceNodeId == curr_link[j].link.sourceNodeId&&rlink[i].targetNodeId == curr_link[j].link.targetNodeId){
+                                    curr_link[j].lineStyle={
+                                            color: 'pink',
+                                            width: 8
+                                        }
+                                    }
+                                    if(rlink[i].sourceNodeId == curr_link[j].link.targetNodeId&&rlink[i].targetNodeId == curr_link[j].link.sourceNodeId){
+                                    curr_link[j].lineStyle={
+                                            color: 'pink',
+                                            width: 8
+                                        }
+                                    }
+                                   
+                                }
+                            }
+                            myChart.setOption({
+                                series: {
+                                    // nodes: nodeData1,
+                                    // links: edge
+                                    nodes: curr_node,
+                                    links: curr_link
+                                }
+                            });
+                        });
+                    
+                        
+                    // //获取关键节点
+                    // axios.post('/node/keyNode', {
+                    //     "params": {
+                    //         "nodes": idArray2
+                    //     },
+                    //     "token": ""
+                    // })
+                    //     .then(function (response) {
+                    //         //let edge = response.data.data;
+                    //         console.log("response");
+                    //         console.log(response.data);
+                    //          console.log(response.data.data);
+                    //         // console.log(edge);
+                    //         myChart.hideLoading();
+                    //         // nodeData[3].symbolSize = 20;
+
+                    //         let aa = response.data.data;
+                    //         if(aa.length>3){
+                    //             aa.length = 3;
+                    //         }
+                    //         let nodesize= 25;
+                    //         //let aa = [4,5,6];
+                    //         for(var i=0;i<aa.length;i++){
+                    //             for(var j=0;j<idArray2.length;j++){
+                    //                 if(aa[i]==idArray2[j]){
+                    //                     curr_node[j].symbolSize = nodesize;
+                    //                     nodesize=nodesize-5;
+                    //                 }
+                    //             }
+                    //         }
+                           
+                    //         myChart.setOption({
+                    //             series: {
+                    //                 // nodes: nodeData1,
+                    //                 // links: edge
+                    //                 nodes: curr_node,
+                    //                 links: curr_link
+                    //             }
+                    //         });
+                    //     });
+                     break;
                 case 'getCheckLength':
                     var data = checkStatus.data;
                     layer.msg('选中了：' + data.length + ' 个');
@@ -310,6 +405,7 @@
                 roam: true,
                 lineStyle: {
                     color: 'source',
+                    //color: 'pink',
                     curveness: 0
                 },
                 label: {
@@ -340,7 +436,8 @@
             console.log(response);
             curr_node = graph.nodes;
             curr_link = graph.links;
-            curr_categories = graph.categories;
+            //显示不同子网
+            //curr_categories = graph.categories;
             let idArray = [];
             console.log("graph");
             console.log(graph);
@@ -356,8 +453,10 @@
                 legend: curr_categories,
                 series: {
                     nodes: curr_node,
-                    links: curr_link,
-                    categories: curr_categories
+                    links: curr_link
+                     //显示不同子网
+                    //,categories: curr_categories
+                    
                 }
 
             });

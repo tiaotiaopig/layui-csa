@@ -28,7 +28,7 @@ layui.define(function (exports) {
 				satoken: localStorage.getItem("satoken")
 			}
 		});
-		$.get("http://localhost:7788/user/doLogout");
+		$.get(localStorage.getItem('baseUrl') + "/user/doLogout");
 		location.href = './login.html';
 		// var operation = new Operation("公用.登出");
 		// operation.execute(function () {
