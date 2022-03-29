@@ -43,7 +43,7 @@
             , layer = layui.layer
             , $ = layui.$;
         // 设置表头提示
-        let tip = "节点可控制级别: " + localStorage.getItem("safety-level");
+        let tip = localStorage.getItem("safety-level");
         $("#safetyTip").text(tip);
         // 表格数据渲染
         // 取出字符串数据，并转化为json对象

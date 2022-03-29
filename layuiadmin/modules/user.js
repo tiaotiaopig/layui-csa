@@ -16,7 +16,11 @@ layui.define('form', function (exports) {
 		, admin = layui.admin
 		, form = layui.form;
 
+<<<<<<< HEAD
 
+=======
+	var $body = $('body');
+>>>>>>> 28477bd3a254e71d8193833a76de96f53d4e9c47
 
 	//自定义验证
 	form.verify({
@@ -51,13 +55,24 @@ layui.define('form', function (exports) {
 		}
 	});
 
+<<<<<<< HEAD
 	var $body = $('body');
 	//更换图形验证码
 	$body.on('click', '#LAY-user-get-vercode', function () {
 		var othis = $(this);
 		this.src = localStorage.getItem('baseUrl') + '/user/captcha?t=' + new Date().getTime()
+=======
+	//更换图形验证码
+	$body.on('click', '#LAY-user-get-vercode', function () {
+		var othis = $(this);
+		this.src = 'imageServlet?t=' + new Date().getTime()
+>>>>>>> 28477bd3a254e71d8193833a76de96f53d4e9c47
 	});
 
 	//对外暴露的接口
 	exports('user', {});
+<<<<<<< HEAD
 });
+=======
+});
+>>>>>>> 28477bd3a254e71d8193833a76de96f53d4e9c47

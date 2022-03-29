@@ -102,7 +102,7 @@
     </div>
 </div>
 
-</div>
+
 
 <!-- 引入 echarts -->
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.1.2/dist/echarts.min.js"></script>
@@ -110,6 +110,9 @@
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
 <script src="../api/myaxios.js"></script>
+<script>
+    localStorage.setItem("baseUrl", "http://192.168.50.17:7788");
+</script>
 <script>
     // 基于准备好的dom，初始化echarts实例
     var myChart = echarts.init(document.getElementById('pie-left'));

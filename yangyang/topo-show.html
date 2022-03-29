@@ -3,20 +3,24 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-
     <meta name="renderer" content="webkit">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
+
     <title>拓扑展示界面</title>
-    <!-- 引入 layui.css -->
-    <link rel="stylesheet" href="//unpkg.com/layui@2.6.8/dist/css/layui.css"/>
-    <!-- 引入 layui.js -->
-    <script src="//unpkg.com/layui@2.6.8/dist/layui.js"></script>
-    <!-- 引入 jquery.js -->
-    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.js"></script>
+     <!-- 引入 layui.css -->
+     <link rel="stylesheet" href="//unpkg.com/layui@2.6.8/dist/css/layui.css"/>
+     <!-- 引入 layui.js -->
+     <script src="//unpkg.com/layui@2.6.8/dist/layui.js"></script>
+     <!-- 引入 jquery.js -->
+     <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.js"></script>
+ 
 
 </head>
 <body>
+<!-- 隐藏窗口 -->
+<input type='text' id="handle_status_graph" value="" hidden="hidden">
+<input type='text' id="handle_status_method" value="" hidden="hidden">
 <!-- 表格 -->
 <script src="../layuiadmin/layui/layui.all.js"></script>
 <div class="layui-row  layui-col-space15">
@@ -40,24 +44,24 @@
             <button class="layui-btn layui-btn-sm" lay-event="getImpLinks">显示关键链路</button>
             <button class="layui-btn layui-btn-sm" lay-event="getCheckLength">获取选中数目</button>
             <button class="layui-btn layui-btn-sm" lay-event="isAll">验证是否全选</button>
-
-
+            <button class="layui-btn layui-btn-sm" id="M-graph" lay-event="getGraph">获取图</button>
+            <button class="layui-btn layui-btn-sm" id="M-method" lay-event="getMethod">获取方法</button>
         </div>
-    </script>
+    </script>   
+
 
 
     <!-- 拓扑 -->
-
-        <div class="layui-col-md6">
-            <div style="box-shadow:black"   class="layui-panel">
-                <div id="topo"
-                     style="height: 800px;  margin: 20px;  padding: 50px 30px;  ">
-                    拓扑图
-                </div>
+    <div class="layui-col-md6">
+        <div style="box-shadow:black"   class="layui-panel">
+            <div id="topo" style="height: 760px;  margin: 20px;  padding: 50px 30px; border: 1px solid pink; ">
+                拓扑图
             </div>
         </div>
+    </div>
 
 </div>
+
 <!-- 引入 echarts -->
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.1.2/dist/echarts.min.js"></script>
 <!-- 引入 axios -->
@@ -65,8 +69,11 @@
 <!-- 引入自定义axios -->
 <script src="../api/myaxios.js"></script>
 
-<script>
 
+
+<script>
+    var s_graph
+    var s_method
     var curr_node = [];
     var curr_link = [];
     var curr_legend = [];
@@ -296,48 +303,6 @@
                                 }
                             });
                         });
-                    
-                        
-                    // //获取关键节点
-                    // axios.post('/node/keyNode', {
-                    //     "params": {
-                    //         "nodes": idArray2
-                    //     },
-                    //     "token": ""
-                    // })
-                    //     .then(function (response) {
-                    //         //let edge = response.data.data;
-                    //         console.log("response");
-                    //         console.log(response.data);
-                    //          console.log(response.data.data);
-                    //         // console.log(edge);
-                    //         myChart.hideLoading();
-                    //         // nodeData[3].symbolSize = 20;
-
-                    //         let aa = response.data.data;
-                    //         if(aa.length>3){
-                    //             aa.length = 3;
-                    //         }
-                    //         let nodesize= 25;
-                    //         //let aa = [4,5,6];
-                    //         for(var i=0;i<aa.length;i++){
-                    //             for(var j=0;j<idArray2.length;j++){
-                    //                 if(aa[i]==idArray2[j]){
-                    //                     curr_node[j].symbolSize = nodesize;
-                    //                     nodesize=nodesize-5;
-                    //                 }
-                    //             }
-                    //         }
-                           
-                    //         myChart.setOption({
-                    //             series: {
-                    //                 // nodes: nodeData1,
-                    //                 // links: edge
-                    //                 nodes: curr_node,
-                    //                 links: curr_link
-                    //             }
-                    //         });
-                    //     });
                      break;
                 case 'getCheckLength':
                     var data = checkStatus.data;
@@ -346,6 +311,76 @@
                 case 'isAll':
                     layer.msg(checkStatus.isAll ? '全选' : '未全选');
                     break;
+                case 'getMethod':
+                    // layer.alert('获取图');
+                    layer.open({
+                        type: 2 //Layer提供了5种层类型。可传入的值有：0（信息框，默认）1（页面层）2（iframe层）3（加载层）4（tips层）
+                        ,title: '确定方法'
+                        ,area: ['520px', '520px']
+                        ,shade: 0.4
+                        ,content: 'try.html' 
+                        ,btn: ['yes', 'close'] //按钮
+                        ,scrollbar: false //屏蔽浏览器滚动条
+                        ,success:function(layero, index){
+                            //向iframe页的id=age的元素传值
+                            // var body = layer.getChildFrame('body', index);
+                            // body.contents().find("#age").val(111);
+                        }
+                        // ,end:function(){ //父窗口有一个隐藏id=handle_status的元素，从这里取iframe返回值
+                        //     // var hstatus = $('#handle_status').val();
+                        //     // alert(hstatus);
+                        // }
+                        ,yes: function(index){
+                            var hstatus1 = $('#handle_status_method').val();
+                            s_method = hstatus1 
+                            alert(s_method);
+                            // layer.msg('yes');
+                            layer.close(index);
+                            // showToast();
+                            document.getElementById('M-method').innerText = s_method
+                        }
+                        ,btn2: function(){
+                            layer.alert('aaa',{title:'msg title'});
+                            // layer.msg('bbb');
+                            layer.closeAll();
+                        }
+                    });      
+                    break;
+                case 'getGraph':
+                    // layer.alert(s_graph);
+                    layer.open({
+                        type: 2 //Layer提供了5种层类型。可传入的值有：0（信息框，默认）1（页面层）2（iframe层）3（加载层）4（tips层）
+                        ,title: '确定图例'
+                        ,area: ['520px', '520px']
+                        ,shade: 0.4
+                        ,content: 'graph-mes.html' 
+                        ,btn: ['yes', 'close'] //按钮
+                        ,scrollbar: false //屏蔽浏览器滚动条
+                        ,success:function(layero, index_g){
+                            //向iframe页的id=age的元素传值
+                            // var body = layer.getChildFrame('body', index);
+                            // body.contents().find("#age").val(111);
+                        }
+                        // ,end:function(){ //父窗口有一个隐藏id=handle_status的元素，从这里取iframe返回值
+                        //     // var hstatus = $('#handle_status').val();
+                        //     // alert(hstatus);
+                        // }
+                        ,yes: function(index_g){
+                            var hstatus = $('#handle_status_graph').val();
+                            // s_graph = hstatus 
+                            alert(hstatus);
+                            // layer.msg('yes');
+                            layer.close(index_g);
+                            document.getElementById('M-graph').innerText = hstatus
+                            // showToast();
+                        }
+                        ,btn2: function(){
+                            layer.alert('aaa',{title:'msg title'});
+                            // layer.msg('bbb');
+                            layer.closeAll();
+                        }
+                    });  
+                    break; 
 
                 //自定义头工具栏右侧图标 - 提示
                 case 'LAYTABLE_TIPS':
@@ -459,32 +494,12 @@
                     
                 }
 
-            });
-
-            // axios.get('', {
-            //             "params": {
-            //                 "allnodes": idArray
-            //             },
-            //             "token": ""
-            //         })
-            //     .then(function (response) {
-            //         myChart.hideLoading();
-            //         // response = [4,5,6]
-            //         // let nodesize= 30;
-            //         // let ImpNodes = response;
-            //         // for(var i=0;i<ImpNodes.length;i++){
-            //         //     for(var j=0;j<idArray.length;j++){
-            //         //         if(ImpNodes[i]==idArray[j]){
-            //         //             graph.nodes[j].symbolSize = nodesize;
-            //         //             nodesize=nodesize-5;
-            //         //         }
-            //         //     }
-            //         // }
-            //     });
+            }); 
         });
-
-
 </script>
+
+
+    
 
 </body>
 </html>

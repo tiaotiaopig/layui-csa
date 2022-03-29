@@ -1,0 +1,99 @@
+ <div>
+ 
+    <div class="layui-bg-gray" style="padding: 30px;">
+
+      <div class="layui-row layui-col-space15">
+        <div  class="layui-col-md6">
+          <div id= "hhh" class="layui-panel" style="height: 675px;  margin: 20px;  padding: 50px 30px; border-style: solid; border-width: 2px; border-color: pink; " > </div>   
+        </div>
+        
+        <div class="layui-col-md6">
+         <div id= "hhh" class="layui-panel" style="height: 675px;  margin: 20px;  padding: 50px 30px; border-style: solid; border-width: 2px; border-color: pink; " > </div>   
+        </div>
+
+      </div> 
+    </div>
+
+</div>  
+
+<!-- 引入 echarts -->
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.1.2/dist/echarts.min.js"></script>
+<!-- 引入 axios -->
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+<!-- 拓扑 -->
+<script>
+  // 基于准备好的dom，初始化echarts实例
+  var myChart = echarts.init(document.getElementById('hhh'));
+  // 先设置图表显示样式
+  myChart.setOption({
+      title: {
+              text: '网络拓扑',
+              top: 'top',
+              left: 'left'
+      },
+      // 设置节点详情
+      tooltip: {
+          trigger: 'item',
+          formatter: function (params) {
+              let data = params.data;
+              if (params.dataType==='edge') {
+                  return `
+                      <h4>${params.name}</h4>
+                      <span>${'源: ' + data.source}</span><br/>
+                      <span>${'目标: ' + data.target}</span><br/>
+                      <span>${'链路类型: ' + data.linkType}</span><br/>
+                      <span>${'带宽: ' + data.bandwidth}Mbps</span><br/>
+                      <span>${'信噪比: ' + data.sn}dB</span><br/>
+                      `;
+              }
+              if (params.dataType === 'node') {
+                  return `
+                      <h4>节点详情</h4>
+                      <span>${'子网: ' + data.category}</span><br/>
+                      <span>${'名称: ' + data.name}</span><br/>
+                      <span>${'IP: ' + data.nodeIp}</span><br/>
+                      <span>${'MAC: ' + data.nodeMac}</span><br/>
+                      <span>${'可控级别: ' + data.controllableLevel}</span><br/>
+                      <span>${'服务数量: ' + data.serviceSum}</span><br/>
+                      `;
+              }
+          }
+      },
+      legend: [],
+      series: [
+          {
+              type: 'graph',
+              layout: 'force',
+              draggable: true,
+              nodes: [],
+              links: [],
+              categories: [],
+              roam: true,
+              label: {
+                  position: 'top'
+              },
+              force: {
+                  repulsion: 100
+              }
+          }
+      ]
+  });
+  //显示加载动画
+  myChart.showLoading();
+  axios.get('http://192.168.50.17:7788/graph/getGraph')
+      .then(function (response) {
+          myChart.hideLoading();
+          console.log(response);
+          let graph = response.data;
+          myChart.setOption({
+              legend: graph.categories,
+              series: {
+                  nodes: graph.nodes,
+                  links: graph.links,
+                  categories: graph.categories
+              }
+          });
+      });
+</script>  
+
